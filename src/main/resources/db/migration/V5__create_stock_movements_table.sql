@@ -1,0 +1,8 @@
+CREATE TABLE stock_movements(
+    id UUID PRIMARY KEY,
+    product_id UUID NOT NULL REFERENCES products(id),
+    type VARCHAR(50),
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)

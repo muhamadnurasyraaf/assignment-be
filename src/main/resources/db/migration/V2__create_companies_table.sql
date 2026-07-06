@@ -1,0 +1,7 @@
+CREATE TABLE companies(
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    owned_by UUID UNIQUE NOT NULL references users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)

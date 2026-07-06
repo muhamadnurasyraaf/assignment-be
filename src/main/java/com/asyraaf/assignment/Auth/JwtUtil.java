@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.asyraaf.assignment.User.User;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -36,5 +37,10 @@ public class JwtUtil {
                 .expiration(expiryDate)
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser().verifyWith(key)
+                .build().parseSignedClaims(token).getPayload();
     }
 }

@@ -1,0 +1,9 @@
+CREATE TABLE products(
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    sku VARCHAR(255),
+    quantity INTEGER NOT NULL DEFAULT 0,
+    company_id UUID REFERENCES companies(id) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
