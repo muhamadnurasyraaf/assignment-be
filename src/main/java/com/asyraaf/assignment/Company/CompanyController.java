@@ -1,6 +1,7 @@
 package com.asyraaf.assignment.Company;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +28,21 @@ public class CompanyController {
 
         return ApiResponse.success(company, "succeed created company");
 
+    }
+
+    // @GetMapping("/dashboard")
+    // public ApiResponse dashboardData(){
+
+    // }
+
+    @GetMapping("/me")
+    public ApiResponse<Company> getMyCompany(@AuthenticationPrincipal String email) {
+        Company company = companyService.getMine(email);
+
+        if (company == null) {
+            return ApiResponse.success(null, "user has no company yet");
+        }
+
+        return ApiResponse.success(company, "fetched company");
     }
 }

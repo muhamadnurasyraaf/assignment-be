@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.asyraaf.assignment.User.User;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,7 @@ public class Company {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owned_by", nullable = false)
+    @JsonIgnoreProperties({ "company" })
     private User owner;
 
     @PrePersist

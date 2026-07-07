@@ -5,6 +5,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.asyraaf.assignment.Company.Company;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -13,13 +15,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User createUser(String username, String email, String password, Role role) {
+    public User createUser(String username, String email, String password, Role role, Company company) {
 
         User user = User.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .role(role).build();
+                .role(role)
+                .company(company)
+                .build();
 
         userRepository.save(user);
 
@@ -30,5 +34,10 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found with email: " + email));
+    }
+
+    public User assignCompany(User user, Company company) {
+        user.setCompany(company);
+        return userRepository.save(user);
     }
 }

@@ -21,7 +21,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         User user = userService.createUser(request.getUsername(), request.getEmail(), request.getPassword(),
-                request.getRole());
+                request.getRole(), null);
         String token = jwtUtil.generateToken(user);
 
         return AuthResponse.from(user, token);
