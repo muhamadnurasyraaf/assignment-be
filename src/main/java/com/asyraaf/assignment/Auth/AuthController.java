@@ -7,7 +7,6 @@ import com.asyraaf.assignment.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +26,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ApiResponse<AuthResponse> register(
-        @Valid @RequestBody RegisterRequest request
-    ) {
+            @Valid @RequestBody RegisterRequest request) {
         AuthResponse res = authService.register(request);
 
         return ApiResponse.success(res, "user registered successfully");
@@ -36,8 +34,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(
-        @Valid @RequestBody LoginRequest request
-    ) {
+            @Valid @RequestBody LoginRequest request) {
         AuthResponse res = authService.authenticate(request);
 
         return ApiResponse.success(res, "successfully authenticated user");

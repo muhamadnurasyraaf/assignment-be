@@ -1,5 +1,7 @@
 package com.asyraaf.assignment.Company;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +33,16 @@ public class CompanyService {
         userService.assignCompany(user, company);
 
         return company;
+    }
+
+    public Company getById(UUID id) {
+        return companyRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "company not found"));
+    }
+
+    public Company getByIdForUpdate(UUID id) {
+        return companyRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "company not found"));
     }
 
     public Company getMine(String email) {
