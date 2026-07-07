@@ -52,6 +52,7 @@ public class ProductService {
                 .name(request.getName())
                 .imageUrl(imageUrl)
                 .sku(sku)
+                .quantity(request.getQuantity() != null ? request.getQuantity() : 0)
                 .company(company)
                 .createdBy(user)
                 .build();
@@ -59,5 +60,19 @@ public class ProductService {
         productRepository.save(product);
 
         return product;
+    }
+
+    public Product getById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "product not found"));
+    }
+
+    @Transactional
+    public void adjustQuantity(UUID id, int delta) {
+        int updated = productRepository.adjustQuantity(id, delta);
+
+        if (updated == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "insufficient stock for this movement");
+        }
     }
 }

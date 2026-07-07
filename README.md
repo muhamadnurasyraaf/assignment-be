@@ -1,0 +1,101 @@
+# Assignment — Inventory Management API
+
+A Spring Boot REST API for multi-tenant inventory management: companies onboard, staff/admin users manage products under their company, and stock movements track inventory changes.
+
+## Tech Stack
+
+- **Java 25**, **Spring Boot 4.1**
+- **PostgreSQL** + **Flyway** (schema-managed via versioned SQL migrations, `spring.jpa.hibernate.ddl-auto=validate` — Hibernate never generates schema)
+- **Spring Security** + **JWT** (`jjwt`) for stateless auth
+- **Cloudinary** for product image storage
+
+## Project Structure
+
+Package-by-feature, each module following the same shape: `Entity`, `Repository`, `Service`, `Controller`, `dto/`.
+
+```
+com.asyraaf.assignment
+├── Auth            # register / login, JWT issuing
+├── User            # user accounts, roles (ADMIN, STAFF)
+├── Company         # tenant boundary — one company per owner
+├── Product         # products, scoped to a company
+├── StockMovement   # IN/OUT movement log per product
+├── common          # ApiResponse envelope, CloudinaryService
+└── config          # SecurityConfig, JwtFilter
+```
+
+Every request/response outside `/auth/**` requires a `Bearer` JWT. Endpoints are open to any authenticated user unless noted with `@PreAuthorize`.
+
+## Setup
+
+1. **Database** — create a local Postgres DB named `assignment`. Flyway runs all migrations in `src/main/resources/db/migration` automatically on startup.
+
+2. **Config** — copy your own values into `src/main/resources/application-local.properties` (gitignored, not committed):
+
+   ```properties
+   spring.datasource.url=jdbc:postgresql://localhost:5432/assignment
+   spring.datasource.username=postgres
+   spring.datasource.password=<your-password>
+   spring.jpa.hibernate.ddl-auto=validate
+   jwt.secret=<base64-secret>
+   jwt.expiration=900000
+   spring.jackson.mapper.accept-case-insensitive-enums=true
+   cloudinary.cloud-name=<your-cloud-name>
+   cloudinary.api-key=<your-api-key>
+   cloudinary.api-secret=<your-api-secret>
+   ```
+
+   Get Cloudinary credentials from your [Cloudinary dashboard](https://cloudinary.com/console) — required for `POST /product/create` since it uploads the product image before saving the record.
+
+3. **Run**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+   App serves on `http://localhost:8081/api`.
+
+## API Overview
+
+All paths below are relative to `/api`.
+
+### Auth (`/auth`) — public
+
+| Method | Path        | Description                     |
+|--------|-------------|----------------------------------|
+| POST   | `/register` | Create a user account, returns JWT |
+| POST   | `/login`    | Authenticate, returns JWT       |
+
+### Company (`/company`) — authenticated
+
+| Method | Path      | Description                                  |
+|--------|-----------|-----------------------------------------------|
+| POST   | `/create` | Create a company owned by the calling user (one company per user, DB-enforced) |
+| GET    | `/me`     | Fetch the calling user's company              |
+
+### User (`/user`) — authenticated
+
+| Method | Path      | Description                          | Access       |
+|--------|-----------|---------------------------------------|--------------|
+| POST   | `/create` | Admin creates a staff/admin user under their own company | `ADMIN` only |
+
+### Product (`/product`) — authenticated
+
+| Method | Path      | Description                              |
+|--------|-----------|--------------------------------------------|
+| POST   | `/create` | Create a product under the caller's company (`multipart/form-data`: `name`, `image`, optional `quantity`) |
+
+SKU is auto-generated (`<3-letter company prefix><product count>`), and product creation is serialized per-company (pessimistic lock) to prevent duplicate SKUs under concurrent requests. `quantity` defaults to `0` if omitted.
+
+### Stock Movement (`/stock-movement`) — authenticated
+
+| Method | Path                       | Description                              |
+|--------|----------------------------|--------------------------------------------|
+| POST   | `/create`                  | Record an `IN`/`OUT` movement for a product in the caller's company, atomically adjusting its `quantity` |
+| GET    | `/product/{productId}`     | List movement history for a product (must belong to caller's company) |
+
+An `OUT` movement larger than the current stock is rejected with `409 CONFLICT` — the quantity check and update happen in a single atomic DB statement, so this is safe under concurrent requests.
+
+## Known Limitations
+
+- `users.email` has no real DB-level uniqueness constraint (`ddl-auto=validate` means the JPA `@Column(unique = true)` annotation has no effect, and the Flyway schema doesn't declare it either). Duplicate-email registrations are currently possible and will break login for the affected accounts.
+- Registering without a `role` sends `null` through to `User.role` explicitly (bypassing the entity's default of `STAFF`), which will fail the `NOT NULL` constraint on insert.
+- `Company.create` doesn't catch the DB unique-constraint violation if two requests race to create a company for the same user — the second gets an unhandled 500 instead of a friendly 409.

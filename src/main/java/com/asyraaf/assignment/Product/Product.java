@@ -43,6 +43,10 @@ public class Product {
     @Column(nullable = false)
     private String sku;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer quantity = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;

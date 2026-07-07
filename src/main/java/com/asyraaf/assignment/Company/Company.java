@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.asyraaf.assignment.Product.Product;
 import com.asyraaf.assignment.User.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -54,6 +55,7 @@ public class Company {
     private User owner;
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Product> products = new ArrayList<>();
 
     @PrePersist
