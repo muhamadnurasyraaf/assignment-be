@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.asyraaf.assignment.Company.dto.RecentTransactionsDto;
 import com.asyraaf.assignment.StockMovement.dto.CreateRequest;
 import com.asyraaf.assignment.common.dto.ApiResponse;
 
@@ -31,6 +33,17 @@ public class StockMovementController {
         StockMovement movement = stockMovementService.createMovement(request, email);
 
         return ApiResponse.success(movement, "successfully recorded stock movement");
+    }
+
+    @GetMapping
+    public ApiResponse<List<RecentTransactionsDto>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal String email) {
+
+        List<RecentTransactionsDto> movements = stockMovementService.getByCompany(email, page, size);
+
+        return ApiResponse.success(movements, "fetched stock movements");
     }
 
     @GetMapping("/product/{productId}")

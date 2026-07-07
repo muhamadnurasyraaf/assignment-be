@@ -14,6 +14,10 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
 
     List<StockMovement> findByProductId(UUID productId);
 
+    boolean existsByProductId(UUID productId);
+
+    boolean existsByUserId(UUID userId);
+
     @Query("select sm from StockMovement sm join fetch sm.product p join fetch sm.user u "
             + "where p.company.id = :companyId order by sm.createdAt desc")
     List<StockMovement> findLatestByCompanyId(@Param("companyId") UUID companyId, Pageable pageable);

@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.asyraaf.assignment.Company.Company;
 import com.asyraaf.assignment.Company.CompanyService;
 import com.asyraaf.assignment.Product.dto.CreateRequest;
+import com.asyraaf.assignment.Product.dto.UpdateRequest;
+import com.asyraaf.assignment.StockMovement.StockMovementRepository;
 import com.asyraaf.assignment.User.User;
 import com.asyraaf.assignment.User.UserService;
 import com.asyraaf.assignment.common.service.CloudinaryService;
@@ -25,6 +27,23 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserService userService;
     private final CloudinaryService cloudinaryService;
+    private final StockMovementRepository stockMovementRepository;
+
+    private Company requireCompany(User user) {
+        Company company = user.getCompany();
+
+        if (company == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "user does not belong to a company");
+        }
+
+        return company;
+    }
+
+    private void requireSameCompany(Product product, Company company) {
+        if (!product.getCompany().getId().equals(company.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "product does not belong to your company");
+        }
+    }
 
     private String generateSku(UUID companyId) {
         String companyName = companyService.getByIdForUpdate(companyId).getName();
@@ -40,11 +59,7 @@ public class ProductService {
     @Transactional
     public Product createProduct(CreateRequest request, String email) {
         User user = userService.getByEmail(email);
-        Company company = user.getCompany();
-
-        if (company == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "user does not belong to a company");
-        }
+        Company company = requireCompany(user);
 
         String imageUrl = cloudinaryService.uploadImage(request.getImage());
         String sku = generateSku(company.getId());
@@ -79,5 +94,55 @@ public class ProductService {
 
     public List<Product> getLatestByCompany(UUID companyId) {
         return productRepository.findTop5ByCompanyIdOrderByCreatedAtDesc(companyId);
+    }
+
+    public List<Product> getAllByCompany(String email) {
+        User user = userService.getByEmail(email);
+        Company company = requireCompany(user);
+
+        return productRepository.findByCompanyId(company.getId());
+    }
+
+    public Product getByIdForCompany(UUID id, String email) {
+        User user = userService.getByEmail(email);
+        Company company = requireCompany(user);
+
+        Product product = getById(id);
+        requireSameCompany(product, company);
+
+        return product;
+    }
+
+    @Transactional
+    public Product updateProduct(UUID id, UpdateRequest request, String email) {
+        Product product = getByIdForCompany(id, email);
+
+        if (request.getName() != null) {
+            product.setName(request.getName());
+        }
+
+        if (request.getQuantity() != null) {
+            product.setQuantity(request.getQuantity());
+        }
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            product.setImageUrl(cloudinaryService.uploadImage(request.getImage()));
+        }
+
+        productRepository.save(product);
+
+        return product;
+    }
+
+    @Transactional
+    public void deleteProduct(UUID id, String email) {
+        Product product = getByIdForCompany(id, email);
+
+        if (stockMovementRepository.existsByProductId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "cannot delete a product with recorded stock movement history");
+        }
+
+        productRepository.delete(product);
     }
 }

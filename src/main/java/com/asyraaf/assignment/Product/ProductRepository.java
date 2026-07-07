@@ -20,4 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     List<Product> findTop5ByCompanyIdOrderByCreatedAtDesc(UUID companyId);
 
+    List<Product> findByCompanyId(UUID companyId);
+
+    boolean existsByCreatedById(UUID userId);
+
 }

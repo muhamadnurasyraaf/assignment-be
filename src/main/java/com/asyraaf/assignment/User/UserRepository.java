@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
     List<User> findTop5ByCompanyIdOrderByCreatedAtDesc(UUID companyId);
+
+    List<User> findByCompanyId(UUID companyId);
 }

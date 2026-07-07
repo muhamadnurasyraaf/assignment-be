@@ -67,13 +67,7 @@ public class DashboardService {
 
     private static List<RecentTransactionsDto> toRecentTransactionsDto(List<StockMovement> movements) {
         return movements.stream()
-                .map(movement -> new RecentTransactionsDto(
-                        movement.getId(),
-                        movement.getProduct().getName(),
-                        movement.getType(),
-                        movement.getQuantity(),
-                        movement.getUser().getUsername(),
-                        movement.getCreatedAt()))
+                .map(RecentTransactionsDto::from)
                 .toList();
     }
 

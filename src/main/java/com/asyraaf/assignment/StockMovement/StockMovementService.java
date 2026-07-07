@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.asyraaf.assignment.Company.Company;
+import com.asyraaf.assignment.Company.dto.RecentTransactionsDto;
 import com.asyraaf.assignment.Product.Product;
 import com.asyraaf.assignment.Product.ProductService;
 import com.asyraaf.assignment.StockMovement.dto.CreateRequest;
@@ -77,5 +78,15 @@ public class StockMovementService {
 
     public List<StockMovement> getLatestByCompany(UUID companyId) {
         return stockMovementRepository.findLatestByCompanyId(companyId, PageRequest.of(0, 5));
+    }
+
+    public List<RecentTransactionsDto> getByCompany(String email, int page, int size) {
+        User user = userService.getByEmail(email);
+        Company company = requireCompany(user);
+
+        List<StockMovement> movements = stockMovementRepository.findLatestByCompanyId(company.getId(),
+                PageRequest.of(page, size));
+
+        return movements.stream().map(RecentTransactionsDto::from).toList();
     }
 }
