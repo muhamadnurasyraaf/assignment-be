@@ -1,5 +1,8 @@
 package com.asyraaf.assignment.User;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,5 +42,9 @@ public class UserService {
     public User assignCompany(User user, Company company) {
         user.setCompany(company);
         return userRepository.save(user);
+    }
+
+    public List<User> getLatestByCompany(UUID companyId) {
+        return userRepository.findTop5ByCompanyIdOrderByCreatedAtDesc(companyId);
     }
 }

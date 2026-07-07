@@ -1,5 +1,6 @@
 package com.asyraaf.assignment.Product;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -74,5 +75,9 @@ public class ProductService {
         if (updated == 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "insufficient stock for this movement");
         }
+    }
+
+    public List<Product> getLatestByCompany(UUID companyId) {
+        return productRepository.findTop5ByCompanyIdOrderByCreatedAtDesc(companyId);
     }
 }

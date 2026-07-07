@@ -3,6 +3,7 @@ package com.asyraaf.assignment.StockMovement;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,5 +73,9 @@ public class StockMovementService {
         requireSameCompany(product, company);
 
         return stockMovementRepository.findByProductId(productId);
+    }
+
+    public List<StockMovement> getLatestByCompany(UUID companyId) {
+        return stockMovementRepository.findLatestByCompanyId(companyId, PageRequest.of(0, 5));
     }
 }

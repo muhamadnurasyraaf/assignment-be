@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.asyraaf.assignment.Company.dto.CreateRequest;
+import com.asyraaf.assignment.Company.dto.DashboardResponse;
 import com.asyraaf.assignment.common.dto.ApiResponse;
 
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final DashboardService dashboardService;
 
     @PostMapping("/create")
     public ApiResponse<Company> createCompany(@Valid @RequestBody CreateRequest request,
@@ -30,10 +32,12 @@ public class CompanyController {
 
     }
 
-    // @GetMapping("/dashboard")
-    // public ApiResponse dashboardData(){
+    @GetMapping("/dashboard")
+    public ApiResponse<DashboardResponse> dashboardData(@AuthenticationPrincipal String email) {
+        DashboardResponse dashboard = dashboardService.getDashboard(email);
 
-    // }
+        return ApiResponse.success(dashboard, "fetched dashboard");
+    }
 
     @GetMapping("/me")
     public ApiResponse<Company> getMyCompany(@AuthenticationPrincipal String email) {
