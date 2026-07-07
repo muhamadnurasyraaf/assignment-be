@@ -1,8 +1,9 @@
 package com.asyraaf.assignment.Product;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,8 +20,8 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping("/create")
-    public ApiResponse<Product> createProduct(@Valid @RequestBody CreateRequest request,
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Product> createProduct(@Valid @ModelAttribute CreateRequest request,
             @AuthenticationPrincipal String email) {
 
         Product product = productService.createProduct(request, email);

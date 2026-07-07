@@ -12,6 +12,7 @@ import com.asyraaf.assignment.Company.CompanyService;
 import com.asyraaf.assignment.Product.dto.CreateRequest;
 import com.asyraaf.assignment.User.User;
 import com.asyraaf.assignment.User.UserService;
+import com.asyraaf.assignment.common.service.CloudinaryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ public class ProductService {
     private final CompanyService companyService;
     private final ProductRepository productRepository;
     private final UserService userService;
+    private final CloudinaryService cloudinaryService;
 
     private String generateSku(UUID companyId) {
         String companyName = companyService.getByIdForUpdate(companyId).getName();
@@ -43,10 +45,12 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "user does not belong to a company");
         }
 
+        String imageUrl = cloudinaryService.uploadImage(request.getImage());
         String sku = generateSku(company.getId());
 
         Product product = Product.builder()
                 .name(request.getName())
+                .imageUrl(imageUrl)
                 .sku(sku)
                 .company(company)
                 .createdBy(user)
